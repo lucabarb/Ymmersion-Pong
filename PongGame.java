@@ -9,7 +9,7 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int paddle2Height = 120;
     private int paddle1Y = 150, paddle2Y = 150;
     private int ballX = 250, ballY = 150, ballDiameter = 20;
-    private int ballXSpeed = 3, ballYSpeed = 3;
+    private int ballXSpeed = 5, ballYSpeed = 5;
 
     // Bonus/Malus
     private int bonusX = -100, bonusY = -100, bonusWidth = 100, bonusHeight = 100;
@@ -129,8 +129,8 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     public void applyBonusOrMalus() {
         if (isBonus) {
             // Appliquer un bonus : augmenter la vitesse de la balle
-            ballXSpeed += 1;
-            ballYSpeed += 1;
+            ballXSpeed += 2;
+            ballYSpeed += 2;
         } else {
             // Appliquer un malus : réduire la taille du paddle qui a touché la balle en dernier
             if (lastHitByPaddle1) {
