@@ -10,6 +10,9 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int paddle1Y = 150, paddle2Y = 150;
     private int ballX = 250, ballY = 150, ballDiameter = 20;
     private int ballXSpeed = 5, ballYSpeed = 5;
+    private int ScoreP1 = 0;
+    private int ScoreP2 = 0;
+
 
     // Bonus/Malus
     private int bonusX = -100, bonusY = -100, bonusWidth = 100, bonusHeight = 100;
@@ -51,10 +54,19 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.setColor(Color.WHITE);
+        
+        // Afficher les paddles
         g.fillRect(0, paddle1Y, paddleWidth, paddle1Height);
         g.fillRect(getWidth() - paddleWidth, paddle2Y, paddleWidth, paddle2Height);
+        
+        // Afficher la balle
         g.fillOval(ballX, ballY, ballDiameter, ballDiameter);
-
+        
+        // Afficher les scores
+        g.setFont(new Font("Arial", Font.BOLD, 20));  // Définir une police plus grande
+        g.drawString("Player 1: " + ScoreP1, 50, 30);  // Afficher le score du joueur 1
+        g.drawString("Player 2: " + ScoreP2, getWidth() - 150, 30);  // Afficher le score du joueur 2
+        
         // Dessiner le bonus/malus s'il est actif
         if (bonusActive) {
             g.setColor(isBonus ? Color.GREEN : Color.RED);
@@ -65,35 +77,35 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     public void actionPerformed(ActionEvent e) {
         ballX += ballXSpeed;
         ballY += ballYSpeed;
-
+    
         if (ballY <= 0 || ballY >= getHeight() - ballDiameter) {
             ballYSpeed = -ballYSpeed;
         }
-
+    
         // Paddle 1 touche la balle
         if (ballX <= paddleWidth && ballY + ballDiameter >= paddle1Y && ballY <= paddle1Y + paddle1Height) {
             ballXSpeed = -ballXSpeed;
-            lastHitByPaddle1 = true; // La balle a été touchée par le paddle 1
+            lastHitByPaddle1 = true;
         }
-
+    
         // Paddle 2 touche la balle
         if (ballX >= getWidth() - paddleWidth - ballDiameter && ballY + ballDiameter >= paddle2Y && ballY <= paddle2Y + paddle2Height) {
             ballXSpeed = -ballXSpeed;
-            lastHitByPaddle1 = false; // La balle a été touchée par le paddle 2
+            lastHitByPaddle1 = false;
         }
-
+    
+        // Gérer les sorties de balle
         if (ballX < 0 || ballX > getWidth()) {
-            ballX = 250;
-            ballY = 150;
+            scoreP();  // Mettre à jour les scores lorsque la balle sort
         }
-
+    
         // Gérer la collision de la balle avec le bonus/malus
         if (bonusActive && ballX + ballDiameter >= bonusX && ballX <= bonusX + bonusWidth &&
             ballY + ballDiameter >= bonusY && ballY <= bonusY + bonusHeight) {
             applyBonusOrMalus();
             bonusActive = false;  // Désactiver le bonus/malus après collision
         }
-
+    
         repaint();
     }
 
@@ -115,6 +127,22 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         if (paddle2MovingDown && paddle2Y < getHeight() - paddle2Height) {
             paddle2Y += 5;
         }
+    }
+
+    public void scoreP() {
+        if (ballX < 0) {  // Si la balle sort du côté gauche
+            ScoreP2 += 1;  // Le joueur 2 marque un point
+        } else if (ballX > getWidth()) {  // Si la balle sort du côté droit
+            ScoreP1 += 1;  // Le joueur 1 marque un point
+        }
+        
+        // Réinitialiser la position de la balle
+        ballX = getWidth() / 2 - ballDiameter / 2;
+        ballY = getHeight() / 2 - ballDiameter / 2;
+        
+        // Réinitialiser la vitesse de la balle
+        ballXSpeed = 5;
+        ballYSpeed = 5;
     }
 
     // Génération aléatoire d'un bonus/malus
