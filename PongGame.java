@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.util.Random;
 
 public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int paddleWidth = 10;
@@ -9,12 +10,20 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int ballX = 250, ballY = 150, ballDiameter = 20;
     private int ballXSpeed = 3, ballYSpeed = 3;
 
-    private Timer timer;
-    private Timer paddle1MoveTimer;  // Timer pour la paddle 1
-    private Timer paddle2MoveTimer;  // Timer pour la paddle 2
+    // Bonus/Malus
+    private int bonusX = -100, bonusY = -100, bonusWidth = 100, bonusHeight = 100;
+    private boolean bonusActive = false;
+    private boolean isBonus = true;  // Bonus (vert) ou malus (rouge)
 
+    private Timer timer;
+    private Timer paddle1MoveTimer;
+    private Timer paddle2MoveTimer;
+    private Timer bonusTimer;
+    
     private boolean paddle1MovingUp = false, paddle1MovingDown = false;
     private boolean paddle2MovingUp = false, paddle2MovingDown = false;
+
+    private Random random;
 
     public PongGame() {
         this.setPreferredSize(new Dimension(500, 300));
@@ -24,9 +33,14 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         timer = new Timer(10, this);
         timer.start();
 
-        // Initialiser les Timers pour les deux paddles
         paddle1MoveTimer = new Timer(10, evt -> movePaddle1());
         paddle2MoveTimer = new Timer(10, evt -> movePaddle2());
+
+        random = new Random();
+
+        // Timer pour générer des bonus/malus toutes les 7 secondes
+        bonusTimer = new Timer(7000, evt -> spawnBonus());
+        bonusTimer.start();
     }
 
     @Override
@@ -36,6 +50,12 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         g.fillRect(0, paddle1Y, paddleWidth, paddleHeight);
         g.fillRect(getWidth() - paddleWidth, paddle2Y, paddleWidth, paddleHeight);
         g.fillOval(ballX, ballY, ballDiameter, ballDiameter);
+
+        // Dessiner le bonus/malus s'il est actif
+        if (bonusActive) {
+            g.setColor(isBonus ? Color.GREEN : Color.RED);
+            g.fillRect(bonusX, bonusY, bonusWidth, bonusHeight);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -57,6 +77,13 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         if (ballX < 0 || ballX > getWidth()) {
             ballX = 250;
             ballY = 150;
+        }
+
+        // Gérer la collision de la balle avec le bonus/malus
+        if (bonusActive && ballX + ballDiameter >= bonusX && ballX <= bonusX + bonusWidth &&
+            ballY + ballDiameter >= bonusY && ballY <= bonusY + bonusHeight) {
+            applyBonusOrMalus();
+            bonusActive = false;  // Désactiver le bonus/malus après collision
         }
 
         repaint();
@@ -82,19 +109,39 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         }
     }
 
+    // Génération aléatoire d'un bonus/malus
+    public void spawnBonus() {
+        bonusX = random.nextInt(getWidth() - bonusWidth);
+        bonusY = random.nextInt(getHeight() - bonusHeight);
+        isBonus = random.nextBoolean();  // Choisir si c'est un bonus ou un malus
+        bonusActive = true;  // Activer le bonus/malus
+    }
+
+    // Appliquer les effets du bonus ou malus
+    public void applyBonusOrMalus() {
+        if (isBonus) {
+            // Appliquer un bonus : augmenter la vitesse de la balle
+            ballXSpeed += 1;
+            ballYSpeed += 1;
+        } else {
+            // Appliquer un malus : réduire la taille des paddles
+            paddleHeight = Math.max(60, paddleHeight - 20);
+        }
+    }
+
     @Override
     public void keyPressed(KeyEvent e) {
         // Paddle 1 (gauche)
         if (e.getKeyCode() == KeyEvent.VK_W) {
             paddle1MovingUp = true;
-            paddle1MovingDown = false;  // Arrêter le mouvement de descente
+            paddle1MovingDown = false;
             if (!paddle1MoveTimer.isRunning()) {
                 paddle1MoveTimer.start();
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_S) {
             paddle1MovingDown = true;
-            paddle1MovingUp = false;  // Arrêter le mouvement de montée
+            paddle1MovingUp = false;
             if (!paddle1MoveTimer.isRunning()) {
                 paddle1MoveTimer.start();
             }
@@ -103,14 +150,14 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         // Paddle 2 (droite)
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             paddle2MovingUp = true;
-            paddle2MovingDown = false;  // Arrêter le mouvement de descente
+            paddle2MovingDown = false;
             if (!paddle2MoveTimer.isRunning()) {
                 paddle2MoveTimer.start();
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             paddle2MovingDown = true;
-            paddle2MovingUp = false;  // Arrêter le mouvement de montée
+            paddle2MovingUp = false;
             if (!paddle2MoveTimer.isRunning()) {
                 paddle2MoveTimer.start();
             }
@@ -126,8 +173,6 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         if (e.getKeyCode() == KeyEvent.VK_S) {
             paddle1MovingDown = false;
         }
-
-        // Arrêter le Timer si les deux directions sont relâchées
         if (!paddle1MovingUp && !paddle1MovingDown) {
             paddle1MoveTimer.stop();
         }
@@ -139,8 +184,6 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             paddle2MovingDown = false;
         }
-
-        // Arrêter le Timer si les deux directions sont relâchées
         if (!paddle2MovingUp && !paddle2MovingDown) {
             paddle2MoveTimer.stop();
         }
@@ -150,7 +193,7 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     public void keyTyped(KeyEvent e) {}
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Pong Game");
+        JFrame frame = new JFrame("Pong Game with Bonus/Malus");
         PongGame game = new PongGame();
         frame.add(game);
         frame.pack();
