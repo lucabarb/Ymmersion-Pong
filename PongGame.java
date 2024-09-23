@@ -5,7 +5,8 @@ import java.util.Random;
 
 public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int paddleWidth = 10;
-    private int paddleHeight = 120;
+    private int paddle1Height = 120;
+    private int paddle2Height = 120;
     private int paddle1Y = 150, paddle2Y = 150;
     private int ballX = 250, ballY = 150, ballDiameter = 20;
     private int ballXSpeed = 3, ballYSpeed = 3;
@@ -19,11 +20,14 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     private Timer paddle1MoveTimer;
     private Timer paddle2MoveTimer;
     private Timer bonusTimer;
-    
+
     private boolean paddle1MovingUp = false, paddle1MovingDown = false;
     private boolean paddle2MovingUp = false, paddle2MovingDown = false;
 
     private Random random;
+
+    // Variable pour suivre quel paddle a touché la balle en dernier
+    private boolean lastHitByPaddle1 = false; 
 
     public PongGame() {
         this.setPreferredSize(new Dimension(500, 300));
@@ -47,8 +51,8 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.setColor(Color.WHITE);
-        g.fillRect(0, paddle1Y, paddleWidth, paddleHeight);
-        g.fillRect(getWidth() - paddleWidth, paddle2Y, paddleWidth, paddleHeight);
+        g.fillRect(0, paddle1Y, paddleWidth, paddle1Height);
+        g.fillRect(getWidth() - paddleWidth, paddle2Y, paddleWidth, paddle2Height);
         g.fillOval(ballX, ballY, ballDiameter, ballDiameter);
 
         // Dessiner le bonus/malus s'il est actif
@@ -66,12 +70,16 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
             ballYSpeed = -ballYSpeed;
         }
 
-        if (ballX <= paddleWidth && ballY + ballDiameter >= paddle1Y && ballY <= paddle1Y + paddleHeight) {
+        // Paddle 1 touche la balle
+        if (ballX <= paddleWidth && ballY + ballDiameter >= paddle1Y && ballY <= paddle1Y + paddle1Height) {
             ballXSpeed = -ballXSpeed;
+            lastHitByPaddle1 = true; // La balle a été touchée par le paddle 1
         }
 
-        if (ballX >= getWidth() - paddleWidth - ballDiameter && ballY + ballDiameter >= paddle2Y && ballY <= paddle2Y + paddleHeight) {
+        // Paddle 2 touche la balle
+        if (ballX >= getWidth() - paddleWidth - ballDiameter && ballY + ballDiameter >= paddle2Y && ballY <= paddle2Y + paddle2Height) {
             ballXSpeed = -ballXSpeed;
+            lastHitByPaddle1 = false; // La balle a été touchée par le paddle 2
         }
 
         if (ballX < 0 || ballX > getWidth()) {
@@ -94,7 +102,7 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         if (paddle1MovingUp && paddle1Y > 0) {
             paddle1Y -= 5;
         }
-        if (paddle1MovingDown && paddle1Y < getHeight() - paddleHeight) {
+        if (paddle1MovingDown && paddle1Y < getHeight() - paddle1Height) {
             paddle1Y += 5;
         }
     }
@@ -104,7 +112,7 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         if (paddle2MovingUp && paddle2Y > 0) {
             paddle2Y -= 5;
         }
-        if (paddle2MovingDown && paddle2Y < getHeight() - paddleHeight) {
+        if (paddle2MovingDown && paddle2Y < getHeight() - paddle2Height) {
             paddle2Y += 5;
         }
     }
@@ -124,8 +132,12 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
             ballXSpeed += 1;
             ballYSpeed += 1;
         } else {
-            // Appliquer un malus : réduire la taille des paddles
-            paddleHeight = Math.max(60, paddleHeight - 20);
+            // Appliquer un malus : réduire la taille du paddle qui a touché la balle en dernier
+            if (lastHitByPaddle1) {
+                paddle1Height = Math.max(60, paddle1Height - 20); // Réduire la taille du paddle 1
+            } else {
+                paddle2Height = Math.max(60, paddle2Height - 20); // Réduire la taille du paddle 2
+            }
         }
     }
 
