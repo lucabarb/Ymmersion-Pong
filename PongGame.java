@@ -8,7 +8,7 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int paddle1Height = 120;
     private int paddle2Height = 120;
     private int paddle1Y = 150, paddle2Y = 150;
-    private int ballX = 250, ballY = 150, ballDiameter = 20;
+    private int ballX = 250, ballY = 150, ballDiameter = 50;
     private int ballXSpeed = 5, ballYSpeed = 5;
     private int ScoreP1 = 0;
     private int ScoreP2 = 0;
