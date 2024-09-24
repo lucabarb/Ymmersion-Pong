@@ -11,8 +11,12 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int ballDiameter = 50;
     private int ScoreP1 = 0, ScoreP2 = 0;
 
+<<<<<<< HEAD
     private ArrayList<Ball> balls; // Multiple balls for the "multiply" bonus
     private static final int INITIAL_BALLS = 1; // Start with 1 ball
+=======
+    private final int MAX_SCORE = 10;  // Limite du score
+>>>>>>> fb181beddbb63bb3cf7ffe21f919aea0ed6bace2
 
     // Bonus Variables
     private int bonusX = -100, bonusY = -100, bonusWidth = 100, bonusHeight = 100;
@@ -91,11 +95,24 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+<<<<<<< HEAD
         for (Ball ball : balls) {
             ball.move(getWidth(), getHeight(), paddle1Y, paddle1Height, paddle2Y, paddle2Height, paddleWidth);
             if (ball.outOfBounds(getWidth())) {
                 scorePoint(ball);
             }
+=======
+        if (ScoreP1 >= MAX_SCORE || ScoreP2 >= MAX_SCORE) {
+            endGame();  // Vérifier si l'un des joueurs a atteint le score maximal
+            return;
+        }
+        
+        ballX += ballXSpeed;
+        ballY += ballYSpeed;
+    
+        if (ballY <= 0 || ballY >= getHeight() - ballDiameter) {
+            ballYSpeed = -ballYSpeed;
+>>>>>>> fb181beddbb63bb3cf7ffe21f919aea0ed6bace2
         }
 
         // Check ball collisions with the bonus
@@ -170,6 +187,56 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
         }
     }
 
+<<<<<<< HEAD
+=======
+    public void scoreP() {
+        if (ballX < 0) {  // Si la balle sort du côté gauche
+            ScoreP2 += 1;  // Le joueur 2 marque un point
+        } else if (ballX > getWidth()) {  // Si la balle sort du côté droit
+            ScoreP1 += 1;  // Le joueur 1 marque un point
+        }
+        
+        // Réinitialiser la position de la balle
+        ballX = getWidth() / 2 - ballDiameter / 2;
+        ballY = getHeight() / 2 - ballDiameter / 2;
+        
+        // Réinitialiser la vitesse de la balle
+        ballXSpeed = 5;
+        ballYSpeed = 5;
+    }
+
+    // Génération aléatoire d'un bonus/malus
+    public void spawnBonus() {
+        bonusX = random.nextInt(getWidth() - bonusWidth);
+        bonusY = random.nextInt(getHeight() - bonusHeight);
+        isBonus = random.nextBoolean();  // Choisir si c'est un bonus ou un malus
+        bonusActive = true;  // Activer le bonus/malus
+    }
+
+    // Appliquer les effets du bonus ou malus
+    public void applyBonusOrMalus() {
+        if (isBonus) {
+            // Appliquer un bonus : augmenter la vitesse de la balle
+            ballXSpeed += 2;
+            ballYSpeed += 2;
+        } else {
+            // Appliquer un malus : réduire la taille du paddle qui a touché la balle en dernier
+            if (lastHitByPaddle1) {
+                paddle1Height = Math.max(60, paddle1Height - 20); // Réduire la taille du paddle 1
+            } else {
+                paddle2Height = Math.max(60, paddle2Height - 20); // Réduire la taille du paddle 2
+            }
+        }
+    }
+
+    private void endGame() {
+        String winner = (ScoreP1 >= MAX_SCORE) ? "Player 1 wins!" : "Player 2 wins!";
+        JOptionPane.showMessageDialog(this, winner, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        timer.stop();  // Arrêter le jeu
+        bonusTimer.stop();  // Arrêter le timer des bonus/malus
+    }
+
+>>>>>>> fb181beddbb63bb3cf7ffe21f919aea0ed6bace2
     @Override
     public void keyPressed(KeyEvent e) {
         // Paddle 1 (left)
