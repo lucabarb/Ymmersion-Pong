@@ -13,6 +13,7 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     private int ScoreP1 = 0;
     private int ScoreP2 = 0;
 
+    private final int MAX_SCORE = 10;  // Limite du score
 
     // Bonus/Malus
     private int bonusX = -100, bonusY = -100, bonusWidth = 100, bonusHeight = 100;
@@ -75,6 +76,11 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
+        if (ScoreP1 >= MAX_SCORE || ScoreP2 >= MAX_SCORE) {
+            endGame();  // Vérifier si l'un des joueurs a atteint le score maximal
+            return;
+        }
+        
         ballX += ballXSpeed;
         ballY += ballYSpeed;
     
@@ -167,6 +173,13 @@ public class PongGame extends JPanel implements KeyListener, ActionListener {
                 paddle2Height = Math.max(60, paddle2Height - 20); // Réduire la taille du paddle 2
             }
         }
+    }
+
+    private void endGame() {
+        String winner = (ScoreP1 >= MAX_SCORE) ? "Player 1 wins!" : "Player 2 wins!";
+        JOptionPane.showMessageDialog(this, winner, "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        timer.stop();  // Arrêter le jeu
+        bonusTimer.stop();  // Arrêter le timer des bonus/malus
     }
 
     @Override
